@@ -7,12 +7,14 @@ Este projeto foi desenvolvido em Python para auxiliar no controle financeiro pes
 - Relatórios mensais
 - Exportação para PDF
 - Gráficos visuais de análise financeira
+- Exibição automática do saldo do mês atual, detalhado por categorias
+- CRUD completo: criar, listar, editar e excluir registros de receitas e despesas
 
 ## Estrutura:
-- `app/` : Contém os módulos do sistema  
-- `data/` : Banco de dados gerado  
-- `reports/` : Relatórios PDF gerados  
-- `tests/` : Testes automatizados  
+- `app/` : Contém os módulos do sistema
+- `data/` : Banco de dados gerado
+- `reports/` : Relatórios PDF gerados
+- `tests/` : Testes automatizados
 
 ## Como executar o projeto
 
@@ -25,7 +27,7 @@ python -m venv venv
 - Ative o ambiente:
   - No Windows:
 ```bash
-venv\Scripts\activate
+venv\Scriptsctivate
 ```
   - No Linux/Mac:
 ```bash
@@ -48,4 +50,7 @@ deactivate
 ```
 
 ## Observação
+O sistema apresentará automaticamente, ao iniciar, o resumo do mês atual: receitas totais, despesas por categoria, saldo geral e status em relação aos limites recomendados.
+
 Certifique-se de manter o ambiente virtual ativo sempre que for rodar o projeto ou instalar novas dependências.
+
