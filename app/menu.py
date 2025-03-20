@@ -38,9 +38,7 @@ def exibir_saldo_por_categoria(mes_ano=None):
     for nome, limite, gasto in categorias:
         percentual_utilizado = (gasto / total_receitas * 100) if total_receitas > 0 else 0
         saldo_categoria = (limite/100 * total_receitas) - gasto
-        status = "OK"
-        if saldo_categoria < 0:
-            status = "Excedido"
+        status = "OK" if saldo_categoria >= 0 else "Excedido"
 
         tabela.append([
             nome,
@@ -52,13 +50,56 @@ def exibir_saldo_por_categoria(mes_ano=None):
         ])
 
     print(tabulate(tabela, headers=["Categoria", "Limite", "Gasto", "Utilizado", "Saldo", "Status"], tablefmt="grid"))
-
     conn.close()
+
+def solicitar_valor():
+    while True:
+        valor_str = input("Informe o valor (use ponto para decimais): ").replace(',', '.').strip()
+        try:
+            valor = float(valor_str)
+            if valor > 0:
+                return valor
+            else:
+                print("O valor deve ser positivo.")
+        except ValueError:
+            print("Valor inválido. Digite um número.")
+
+def solicitar_data():
+    while True:
+        data_input = input("Data (dd/mm/aaaa): ").strip()
+        try:
+            datetime.strptime(data_input, '%d/%m/%Y')
+            return data_input
+        except ValueError:
+            print("Formato de data inválido. Use dd/mm/aaaa.")
+
+def solicitar_id_existente(cursor, tabela):
+    while True:
+        id_input = input(f"Informe o ID existente na tabela {tabela}: ").strip()
+        if id_input.isdigit():
+            cursor.execute(f"SELECT id FROM {tabela} WHERE id = ?", (id_input,))
+            if cursor.fetchone():
+                return int(id_input)
+            else:
+                print("ID não encontrado. Tente novamente.")
+        else:
+            print("Entrada inválida. Digite um número.")
+
+def solicitar_categoria(cursor):
+    cursor.execute("SELECT id, nome FROM categorias")
+    categorias = cursor.fetchall()
+    print("Categorias disponíveis:")
+    for c in categorias:
+        print(f"{c[0]} - {c[1]}")
+    return solicitar_id_existente(cursor, 'categorias')
 
 def menu():
     criar_banco()
     clear_console()
     mes_atual = datetime.today().strftime('%Y-%m')
+    mes_anterior = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
+    mes_proximo = (datetime.today() + relativedelta(months=1)).strftime('%Y-%m')
+
     listar_receitas_por_mes(mes_atual)
     listar_despesas_por_mes(mes_atual)
     exibir_saldo_por_categoria(mes_atual)
@@ -76,28 +117,28 @@ def menu():
         print("9 - Exibir Gráficos do mês atual")
         print("10 - Listar mês anterior")
         print("11 - Listar próximo mês")
-        print("12 - Sair")
+        print("12 - Gerar Relatório PDF do mês anterior")
+        print("13 - Gerar Relatório PDF do próximo mês")
+        print("14 - Exibir Gráficos do mês anterior")
+        print("15 - Exibir Gráficos do próximo mês")
+        print("16 - Sair")
 
         escolha = input("Escolha uma opção: ")
 
         if escolha == '1':
             clear_console()
-            valor = float(input("Valor da receita: "))
-            data = input("Data (dd/mm/aaaa): ")
+            valor = solicitar_valor()
+            data = solicitar_data()
             descricao = input("Descrição: ")
             cadastrar_receita(valor, data, descricao)
 
         elif escolha == '2':
             clear_console()
-            valor = float(input("Valor da despesa: "))
-            data = input("Data (dd/mm/aaaa): ")
+            valor = solicitar_valor()
+            data = solicitar_data()
             conn = conectar_banco()
             cursor = conn.cursor()
-            cursor.execute("SELECT id, nome FROM categorias")
-            categorias = cursor.fetchall()
-            for c in categorias:
-                print(f"{c[0]} - {c[1]}")
-            categoria_id = int(input("Informe o ID da categoria: "))
+            categoria_id = solicitar_categoria(cursor)
             descricao = input("Descrição: ")
             cadastrar_despesa(valor, data, categoria_id, descricao)
             conn.close()
@@ -134,19 +175,33 @@ def menu():
 
         elif escolha == '10':
             clear_console()
-            mes_anterior = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
             listar_receitas_por_mes(mes_anterior)
             listar_despesas_por_mes(mes_anterior)
             exibir_saldo_por_categoria(mes_anterior)
 
         elif escolha == '11':
             clear_console()
-            mes_proximo = (datetime.today() + relativedelta(months=1)).strftime('%Y-%m')
             listar_receitas_por_mes(mes_proximo)
             listar_despesas_por_mes(mes_proximo)
             exibir_saldo_por_categoria(mes_proximo)
 
         elif escolha == '12':
+            clear_console()
+            exportar_relatorio_pdf(mes_anterior)
+
+        elif escolha == '13':
+            clear_console()
+            exportar_relatorio_pdf(mes_proximo)
+
+        elif escolha == '14':
+            clear_console()
+            gerar_graficos(mes_anterior)
+
+        elif escolha == '15':
+            clear_console()
+            gerar_graficos(mes_proximo)
+
+        elif escolha == '16':
             print("Encerrando o sistema...")
             break
 
