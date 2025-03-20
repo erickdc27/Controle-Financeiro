@@ -1,2 +1,16 @@
-reportlab
-matplotlib
+# requirements.txt
+
+# Biblioteca para formatação de tabelas no terminal
+ tabulate
+
+# Biblioteca para criação de relatórios em PDF
+ reportlab
+
+# Biblioteca para gráficos visuais
+ matplotlib
+
+# Biblioteca para manipulação avançada de datas
+ python-dateutil
+
+# SQLite já incluído na biblioteca padrão do Python
+# Recomenda-se Python 3.10 ou superior para máxima compatibilidade
